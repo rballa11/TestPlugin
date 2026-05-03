@@ -1,0 +1,34 @@
+{
+  "name": "TestPlugin",
+  "version": "1.0.0",
+  "description": "Your Figma Plugin",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.plugin.json && vite build && cp dist/index.html ui.html",
+    "build:plugin": "tsc -p tsconfig.plugin.json",
+    "build:ui": "vite build && cp dist/index.html ui.html",
+    "watch:plugin": "tsc -p tsconfig.plugin.json --watch",
+    "watch:ui": "vite build --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@figma/eslint-plugin-figma-plugins": "*",
+    "@figma/plugin-typings": "*",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.1",
+    "vite": "^8.0.8",
+    "vite-plugin-singlefile": "^2.3.2"
+  },
+  "dependencies": {
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  }
+}
