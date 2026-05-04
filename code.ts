@@ -63,7 +63,7 @@ figma.ui.onmessage =  (msg) => {
     }
     while (queue.length > 0){
       const node = queue.shift()!;
-      nodes.push(new subFigma(node.height, node.width, node))
+      nodes.push(new subFigma(node.height, node.width, getDescription(node)))
       if ('children' in node){
         for (const children of node.children){
           queue.push(children);
