@@ -8,10 +8,15 @@ load_dotenv()
 
 app = FastAPI()
 
-class object(BaseModel):
-    width: float
-    height: float
-    description: str | None
+class subFigma(BaseModel):
+    width: int
+    height: int
+    desc: str | None
+
+class figma(BaseModel):
+    description: list[subFigma] | None
+
+
 
 # create system prompt
 # create class for nielsen
@@ -47,6 +52,8 @@ class returnObject(BaseModel):
     ninthD: str
     tenthR: int
     tenthD: str
+    overallR: int
+    overall: str
 
 #https://www.nngroup.com/articles/ten-usability-heuristics/
 """
@@ -61,22 +68,27 @@ Aesthetic and minimalist design
 Help users recognize, diagnose, and recover from errors
 Help and documentation
 """
-@app.post('/review', response_class= returnObject)
-def review(item: object):
+@app.post('/review', response_model=returnObject)
+def review(item: figma):
     stream = groq.chat.completions.create(
         messages= [
             {
                 "role": "system",
-                "message": ""
+                "message": "Rate this figma design on the 10 Nielsen Principles from 1 to 10. Each spot in the json list inputted represents a node and a description of that node. We used BFS on the overall Figma Tree to get this JSON list."
+                "For each principle, output a rating and a description of why that rating. Each description should be 2-3 sentences or less. At the end, inlude an overall rating from 1 to 100 and description too. Return whole answer in JSON Format."
+                "10 Nielsen Principles: Visibility of system status, Match between system and the real world, User control and freedom, Consistency and standards, Error prevention, Recognition rather than recall, Flexibility and efficiency of use, Aesthetic and minimalist design, Help users recognize, diagnose, and recover from errors, Help and documentation"
+                "JSON Schema: class returnObject(BaseModel): firstR: int firstD: str secondR: int secondD: str thirdR: int  thirdD: str  fourthR: int fourthD: str fifthR: int fifthD: str sixthR: int sixthD: str seventR: int seventhD: str eigthR: int eightD: str ninthR: int ninthD: str tenthR: int tenthD: str overallR: int overall: str"
+                
             },
             {
                 "role": "user",
                 "message": item.model_dump_json()
             }
         ],
-        model="llama-3.3-70b-versatile"
+        model="llama-3.3-70b-versatile",
+        response_format={"type": "json_object"}
     )
-    return stream.choices[0].message.content
+    return returnObject.model_validate_json(stream.choices[0].message.content)
 
 
     

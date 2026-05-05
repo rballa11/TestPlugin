@@ -7,6 +7,8 @@
 // full browser environment (See https://www.figma.com/plugin-docs/how-plugins-run).
 
 // This shows the HTML page in "ui.html".
+import { JsonOptions } from "vite";
+
 figma.showUI(__html__, { width: 460, height: 640 });
 
 // Calls to "parent.postMessage" from within the HTML page will trigger this
@@ -18,7 +20,46 @@ figma.showUI(__html__, { width: 460, height: 640 });
 // }
 
 function getDescription(node: SceneNode): string{
-  return ""
+  const returnString: string[] = []
+
+  returnString.push(`Type: ${node.type}`)
+  returnString.push(`Name: ${node.name}`)
+  returnString.push(`Visible: ${node.visible}`)
+  if ('opacity' in node) {
+    returnString.push(`Opacity: ${node.opacity}`)
+  }
+
+  if ('characters' in node && node.characters) {
+    returnString.push(`Text: "${node.characters}"`)
+  }
+  if ('fontSize' in node && typeof node.fontSize === 'number') {
+    returnString.push(`FontSize: ${node.fontSize}`)
+  }
+  if ('fills' in node && Array.isArray(node.fills)) {
+    const solidFill = (node.fills as Paint[]).find(f => f.type === 'SOLID') as SolidPaint | undefined
+    if (solidFill) {
+      const { r, g, b } = solidFill.color
+      returnString.push(`Fill: rgb(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)})`)
+    }
+  }
+  if ('cornerRadius' in node && typeof node.cornerRadius === 'number') {
+    returnString.push(`CornerRadius: ${node.cornerRadius}`)
+  }
+  if ('effects' in node && Array.isArray(node.effects) && node.effects.length > 0) {
+    const effectTypes = node.effects.map(e => e.type).join(", ")
+    returnString.push(`Effects: ${effectTypes}`)
+  }
+  if ('layoutMode' in node) {
+    returnString.push(`Layout: ${node.layoutMode}`)
+  }
+  if ('reactions' in node && node.reactions.length > 0) {
+    returnString.push(`Interactions: ${node.reactions.length}`)
+  }
+  if ('parent' in node){
+    returnString.push(`Parent Name: ${node.parent?.name}`)
+  }
+
+  return returnString.join(", ");
 }
 class subFigma {
   height: number;
@@ -30,6 +71,11 @@ class subFigma {
     this.width = width;
     this.description = description;
   }
+
+  toJSON(){
+    return { height: this.height, width: this.width, description: this.description }
+  }
+  
 
 }
 
@@ -56,20 +102,21 @@ figma.ui.onmessage =  (msg) => {
     const selected = figma.currentPage.children;
     
 
-    const nodes: subFigma[] = [];
+    const nodes: string[] = [];
     const queue: SceneNode[] = [];
     for (const children of selected){
       queue.push(children)
     }
     while (queue.length > 0){
       const node = queue.shift()!;
-      nodes.push(new subFigma(node.height, node.width, getDescription(node)))
+      nodes.push(JSON.stringify(new subFigma(node.height, node.width, getDescription(node))))
       if ('children' in node){
         for (const children of node.children){
           queue.push(children);
         }
       }
     }
+    return nodes
 
   }
 
