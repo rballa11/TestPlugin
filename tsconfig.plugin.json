@@ -2,7 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "lib": ["es2020"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "module": "commonjs",
+    "moduleResolution": "node"
   },
   "include": ["code.ts"]
 }

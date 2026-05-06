@@ -7,8 +7,6 @@
 // full browser environment (See https://www.figma.com/plugin-docs/how-plugins-run).
 
 // This shows the HTML page in "ui.html".
-import { JsonOptions } from "vite";
-
 figma.showUI(__html__, { width: 460, height: 640 });
 
 // Calls to "parent.postMessage" from within the HTML page will trigger this
@@ -55,8 +53,8 @@ function getDescription(node: SceneNode): string{
   if ('reactions' in node && node.reactions.length > 0) {
     returnString.push(`Interactions: ${node.reactions.length}`)
   }
-  if ('parent' in node){
-    returnString.push(`Parent Name: ${node.parent?.name}`)
+  if ('parent' in node && node.parent){
+    returnString.push(`Parent Name: ${node.parent.name}`)
   }
 
   return returnString.join(", ");
@@ -64,65 +62,46 @@ function getDescription(node: SceneNode): string{
 class subFigma {
   height: number;
   width: number;
-  description: string;
+  desc: string;
 
   constructor(height: number, width: number, description: string){
     this.height = height;
     this.width = width;
-    this.description = description;
+    this.desc = description;
   }
 
   toJSON(){
-    return { height: this.height, width: this.width, description: this.description }
+    return { height: this.height, width: this.width, desc: this.desc }
   }
   
 
 }
 
 
-figma.ui.onmessage =  (msg) => {
-  // One way of distinguishing between different types of messages sent from
-  // your HTML page is to use an object with a "type" property like this.
-  if (msg.type === 'create-shapes') {
-    // This plugin creates rectangles on the screen.
-    const numberOfRectangles = msg.count;
-
-    const nodes: SceneNode[] = [];
-    for (let i = 0; i < numberOfRectangles; i++) {
-      const rect = figma.createRectangle();
-      rect.x = i * 150;
-      rect.fills = [{ type: 'SOLID', color: { r: 0, g: 1, b: 0 } }];
-      figma.currentPage.appendChild(rect);
-      nodes.push(rect);
-    }
-    figma.currentPage.selection = nodes;
-    figma.viewport.scrollAndZoomIntoView(nodes);
-  }
+figma.ui.onmessage = (msg) => {
   if (msg.type === 'collect'){
     const selected = figma.currentPage.children;
-    
 
-    const nodes: string[] = [];
+    const nodes: subFigma[] = [];
     const queue: SceneNode[] = [];
     for (const children of selected){
       queue.push(children)
     }
     while (queue.length > 0){
       const node = queue.shift()!;
-      nodes.push(JSON.stringify(new subFigma(node.height, node.width, getDescription(node))))
+      nodes.push(new subFigma(node.height, node.width, getDescription(node)))
       if ('children' in node){
         for (const children of node.children){
           queue.push(children);
         }
       }
     }
-    return nodes
-
+    figma.ui.postMessage({type: 'descriptions', payload: {nodes}})
   }
 
-  // Make sure to close the plugin when you're done. Otherwise the plugin will
-  // keep running, which shows the cancel button at the bottom of the screen.
-  figma.closePlugin();
+  if (msg.type === 'cancel'){
+    figma.closePlugin();
+  }
 };
 
 

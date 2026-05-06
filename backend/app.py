@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from groq import Groq
 import os
 from dotenv import load_dotenv
@@ -7,6 +8,13 @@ from pydantic import BaseModel
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class subFigma(BaseModel):
     width: int
@@ -18,12 +26,11 @@ class figma(BaseModel):
 
 
 
-# create system prompt
-# create class for nielsen
-# make output of llm match this nielsen class by putting class desc in prompt
-# create description maker in figma
 # class for into and out .toJson method
+
+# create model class for nielsen
 # display this into figma plugin
+# link code.tsx, second page, and api (conditional render with buffer)
 
 
 
@@ -74,7 +81,7 @@ def review(item: figma):
         messages= [
             {
                 "role": "system",
-                "message": "Rate this figma design on the 10 Nielsen Principles from 1 to 10. Each spot in the json list inputted represents a node and a description of that node. We used BFS on the overall Figma Tree to get this JSON list."
+                "content": "Rate this figma design on the 10 Nielsen Principles from 1 to 10. Each spot in the json list inputted represents a node and a description of that node. We used BFS on the overall Figma Tree to get this JSON list."
                 "For each principle, output a rating and a description of why that rating. Each description should be 2-3 sentences or less. At the end, inlude an overall rating from 1 to 100 and description too. Return whole answer in JSON Format."
                 "10 Nielsen Principles: Visibility of system status, Match between system and the real world, User control and freedom, Consistency and standards, Error prevention, Recognition rather than recall, Flexibility and efficiency of use, Aesthetic and minimalist design, Help users recognize, diagnose, and recover from errors, Help and documentation"
                 "JSON Schema: class returnObject(BaseModel): firstR: int firstD: str secondR: int secondD: str thirdR: int  thirdD: str  fourthR: int fourthD: str fifthR: int fifthD: str sixthR: int sixthD: str seventR: int seventhD: str eigthR: int eightD: str ninthR: int ninthD: str tenthR: int tenthD: str overallR: int overall: str"
@@ -82,7 +89,7 @@ def review(item: figma):
             },
             {
                 "role": "user",
-                "message": item.model_dump_json()
+                "content": item.model_dump_json()
             }
         ],
         model="llama-3.3-70b-versatile",
