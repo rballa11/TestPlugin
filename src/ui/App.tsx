@@ -29,6 +29,7 @@ const App = () => {
   useMessage((msg) => {
     if (msg.type == 'descriptions'){
       //call api request
+      console.log(msg.payload.nodes)
       postResults({description: msg.payload.nodes}).then(r => {
         resultsChange(r)
         stageChange('done')

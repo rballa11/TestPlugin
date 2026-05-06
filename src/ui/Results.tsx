@@ -131,7 +131,7 @@ export default function Results({ result, nodeCount, onBack }: ResultsProps) {
           <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 80px 3fr', padding: '14px 16px', borderBottom: '1px solid #e8e0d4', alignItems: 'center', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '10px', height: '10px', border: '1.5px solid #a09585', borderRadius: '2px', flexShrink: 0 }} />
-              <span style={{ fontWeight: 700, fontSize: '13px' }}>Principle {i + 1}</span>
+              <span style={{ fontWeight: 700, fontSize: '13px' }}>{PRINCIPLE_NAMES[i]}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <div style={{ background: ratingColor(row.rating), color: '#fff', borderRadius: '6px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '15px' }}>

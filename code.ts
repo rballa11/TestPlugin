@@ -80,7 +80,7 @@ class subFigma {
 
 figma.ui.onmessage = (msg) => {
   if (msg.type === 'collect'){
-    const selected = figma.currentPage.children;
+    const selected = figma.currentPage.selection;
 
     const nodes: subFigma[] = [];
     const queue: SceneNode[] = [];

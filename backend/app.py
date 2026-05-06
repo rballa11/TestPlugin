@@ -17,8 +17,8 @@ app.add_middleware(
 )
 
 class subFigma(BaseModel):
-    width: int
-    height: int
+    width: float
+    height: float
     desc: str | None
 
 class figma(BaseModel):
@@ -75,27 +75,42 @@ Aesthetic and minimalist design
 Help users recognize, diagnose, and recover from errors
 Help and documentation
 """
+SYSTEM_PROMPT = f"""Rate this Figma design on the 10 Nielsen Usability Principles. Each item in the input list is a node from a BFS traversal of the Figma tree.
+
+For each principle give a rating (1-10) and a 1-2 sentence explanation. Also give an overall score (1-100) and summary.
+
+You MUST return valid JSON that exactly matches this schema — no extra keys, no missing keys:
+{returnObject.model_json_schema()}
+
+10 Nielsen Principles (in order):
+1. Visibility of system status
+2. Match between system and the real world
+3. User control and freedom
+4. Consistency and standards
+5. Error prevention
+6. Recognition rather than recall
+7. Flexibility and efficiency of use
+8. Aesthetic and minimalist design
+9. Help users recognize, diagnose, and recover from errors
+10. Help and documentation"""
+
 @app.post('/review', response_model=returnObject)
 def review(item: figma):
-    stream = groq.chat.completions.create(
-        messages= [
-            {
-                "role": "system",
-                "content": "Rate this figma design on the 10 Nielsen Principles from 1 to 10. Each spot in the json list inputted represents a node and a description of that node. We used BFS on the overall Figma Tree to get this JSON list."
-                "For each principle, output a rating and a description of why that rating. Each description should be 2-3 sentences or less. At the end, inlude an overall rating from 1 to 100 and description too. Return whole answer in JSON Format."
-                "10 Nielsen Principles: Visibility of system status, Match between system and the real world, User control and freedom, Consistency and standards, Error prevention, Recognition rather than recall, Flexibility and efficiency of use, Aesthetic and minimalist design, Help users recognize, diagnose, and recover from errors, Help and documentation"
-                "JSON Schema: class returnObject(BaseModel): firstR: int firstD: str secondR: int secondD: str thirdR: int  thirdD: str  fourthR: int fourthD: str fifthR: int fifthD: str sixthR: int sixthD: str seventR: int seventhD: str eigthR: int eightD: str ninthR: int ninthD: str tenthR: int tenthD: str overallR: int overall: str"
-                
-            },
-            {
-                "role": "user",
-                "content": item.model_dump_json()
-            }
-        ],
-        model="llama-3.3-70b-versatile",
-        response_format={"type": "json_object"}
-    )
-    return returnObject.model_validate_json(stream.choices[0].message.content)
+    for attempt in range(3):
+        try:
+            response = groq.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": item.model_dump_json()}
+                ],
+                model="llama-3.3-70b-versatile",
+                response_format={"type": "json_object"}
+            )
+            return returnObject.model_validate_json(response.choices[0].message.content)
+        except Exception as e:
+            if attempt == 2:
+                raise e
+            continue
 
 
     
