@@ -23,6 +23,7 @@ class subFigma(BaseModel):
 
 class figma(BaseModel):
     description: list[subFigma] | None
+    image: str | None = None
 
 
 
@@ -51,7 +52,7 @@ class returnObject(BaseModel):
     fifthD: str
     sixthR: int
     sixthD: str
-    seventR: int
+    seventhR: int
     seventhD: str
     eigthR: int
     eightD: str
@@ -77,7 +78,7 @@ Help and documentation
 """
 SYSTEM_PROMPT = f"""Rate this Figma design on the 10 Nielsen Usability Principles. Each item in the input list is a node from a BFS traversal of the Figma tree.
 
-For each principle give a rating (1-10) and a 1-2 sentence explanation. Also give an overall score (1-100) and summary.
+For each principle give a rating (1-10) and a 1-2 sentence explanation. Also give an overall score (1-100) and summary. Be specific in descriptions for each principle, like any specific features, colors, etc.
 
 You MUST return valid JSON that exactly matches this schema — no extra keys, no missing keys:
 {returnObject.model_json_schema()}
@@ -96,14 +97,25 @@ You MUST return valid JSON that exactly matches this schema — no extra keys, n
 
 @app.post('/review', response_model=returnObject)
 def review(item: figma):
+    user_content = []
+    if item.image:
+        user_content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/png;base64,{item.image}"}
+        })
+    user_content.append({
+        "type": "text",
+        "text": item.model_dump_json(exclude={"image"})
+    })
+
     for attempt in range(3):
         try:
             response = groq.chat.completions.create(
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": item.model_dump_json()}
+                    {"role": "user", "content": user_content}
                 ],
-                model="llama-3.3-70b-versatile",
+                model="meta-llama/llama-4-scout-17b-16e-instruct",
                 response_format={"type": "json_object"}
             )
             return returnObject.model_validate_json(response.choices[0].message.content)

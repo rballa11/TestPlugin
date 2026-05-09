@@ -9,6 +9,7 @@ const PRINCIPLE_NAMES = [
   'Aesthetic and minimalist design',
   'Help users recognize, diagnose, and recover from errors',
   'Help and documentation',
+  'OVERALL'
 ]
 
 export interface AuditResult {
@@ -78,6 +79,7 @@ export default function Results({ result, nodeCount, onBack }: ResultsProps) {
     { rating: result.eigthR,  desc: result.eightD },
     { rating: result.ninthR,  desc: result.ninthD },
     { rating: result.tenthR,  desc: result.tenthD },
+    { rating: result.overallR, desc: result.overall}
   ]
 
   const handleCopyCSV = () => {
@@ -161,3 +163,5 @@ export default function Results({ result, nodeCount, onBack }: ResultsProps) {
     </div>
   )
 }
+
+//copy csv not implemented yet

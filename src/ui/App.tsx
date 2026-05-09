@@ -13,6 +13,7 @@ export interface subFigma{
 }
 export interface Figma{
   description: subFigma[]
+  image?: string
 }
 
 const App = () => {
@@ -27,13 +28,16 @@ const App = () => {
   //const [rawData, data] = useState<subFigma[]>([])
 
   useMessage((msg) => {
-    if (msg.type == 'descriptions'){
-      //call api request
-      console.log(msg.payload.nodes)
-      postResults({description: msg.payload.nodes}).then(r => {
+    if (msg.type === 'descriptions'){
+      const bytes: Uint8Array = msg.payload.image
+      const binary = Array.from(bytes).map((b: number) => String.fromCharCode(b)).join('')
+      const base64 = btoa(binary)
+      console.log('data:image/png;base64,' + base64)
+      postResults({ description: msg.payload.nodes, image: base64 }).then(r => {
         resultsChange(r)
         stageChange('done')
-    })
+      })
+      
     }
   })
 

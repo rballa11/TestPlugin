@@ -83,7 +83,7 @@ export default function Home({ onAudit, onCancel }: HomeProps) {
         {/* Layers selected pill */}
         <button style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px 20px', marginTop: '8px', background: '#ffffff', border: '1px solid #ddd5c8', borderRadius: '8px', color: '#2d7d6f', fontSize: '13px', fontWeight: 600, cursor: 'pointer', width: '100%', maxWidth: '300px', letterSpacing: '0.01em' }}>
           <LayersIcon />
-          layers selected
+          Select Layers
         </button>
 
         {/* Continue button */}

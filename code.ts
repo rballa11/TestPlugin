@@ -78,7 +78,7 @@ class subFigma {
 }
 
 
-figma.ui.onmessage = (msg) => {
+figma.ui.onmessage = async (msg) => {
   if (msg.type === 'collect'){
     const selected = figma.currentPage.selection;
 
@@ -96,7 +96,23 @@ figma.ui.onmessage = (msg) => {
         }
       }
     }
-    figma.ui.postMessage({type: 'descriptions', payload: {nodes}})
+
+    let imageBytes: Uint8Array
+    if (selected.length === 1) {
+      imageBytes = await selected[0].exportAsync({
+        format: 'PNG',
+        constraint: { type: 'SCALE', value: 1 }
+      })
+    } else {
+      const group = figma.group([...selected], figma.currentPage)
+      imageBytes = await group.exportAsync({
+        format: 'PNG',
+        constraint: { type: 'SCALE', value: 1 }
+      })
+      figma.ungroup(group)
+    }
+
+    figma.ui.postMessage({ type: 'descriptions', payload: { nodes, image: imageBytes } })
   }
 
   if (msg.type === 'cancel'){
